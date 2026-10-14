@@ -1,0 +1,448 @@
+{
+  "name": "Linkedln Post Oluşturma",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "LinkedIn Post Olusturma",
+        "formDescription": "LinkedIn gönderisi hazırlamak için tüm alanları doldurun",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "isim@example.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Konu başlığı",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Hedef kitle",
+              "placeholder": "Hedef kitleyi yazınız",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -400,
+        -32
+      ],
+      "id": "34dd87d5-c848-424a-913a-751a8ae1189a",
+      "name": "On form submission",
+      "webhookId": "81ce3908-73f8-4868-ab72-563b84923bf3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        240
+      ],
+      "id": "8e677b0e-b9f3-4a8e-8d96-0a63384ed664",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "internette arama yapmak için bu aracı kullan",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"{searchTerm}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 1,\n  \"time_range\": null,\n  \"days\": 7,\n  \"include_answer\": true,\n  \"include_raw_content\": false,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": []\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        -32,
+        176
+      ],
+      "id": "93b47e91-6249-4d51-9abb-7f896d4d77d7",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "eaoNVBQwp3I89zPB",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=konu başlığı:{{ $json['Konu başlığı'] }}\n\nhedef kitle: {{ $json['Hedef kitle'] }}",
+        "options": {
+          "systemMessage": "=LinkedIn gönderileri üreten bir Yapay Zekâ Ajanısın.\nVerilen konu ve hedef kitleye göre; profesyonel, akıcı ve etkileşim odaklı LinkedIn paylaşımları hazırlarsın. Tek amacın, doğrudan LinkedIn’de yayınlanmaya hazır bir gönderi yazmaktır; analiz, araştırma notları veya taslak üretmezsin.\n\nYetkinlikler\n•   Konuyu doğru anlamak ve güncel, güvenilir içgörüler elde etmek için gerekli arka plan araştırmasını kendi içinde yaparsın.\n•   Karmaşık bilgileri sade, uygulanabilir ve hedef kitleye uygun içgörülere dönüştürürsün.\n•   Güçlü bir girişe sahip, akıcı anlatımı olan ve net bir değer sunan tek parça bir LinkedIn gönderisi yazarsın.\n•   Tonu, derinliği ve dili hedef kitleye birebir uyarlarsın.\n•   Gönderiyi doğal bir aksiyon çağrısı ve konuya uygun hashtag’lerle tamamlarsın.\nAraçlar\nTavily - Güncel ve güvenilir bilgileri almak için gerçek zamanlı web araştırması yapar.\n\nEtkileşim Stili\n•   Profesyonel, kendinden emin ve insani.\n•   LinkedIn akışına uygun, kısa paragraflar.\n•   Yalnızca gerekli olduğunda, vurgu veya sıcaklık katmak için minimum emoji.\n•   Teknik derinlikten çok netlik; bilgi yoğunluğundan çok içgörü.\n\nNotlar\n•   Araştırma yalnızca dahili amaçlıdır. Araştırma notlarını, madde işaretlerini, numaralı listeleri veya kaynak dökümlerini asla paylaşmazsın.\n•   Çıktı bir makale, rapor veya akademik özet gibi değil; doğal bir LinkedIn gönderisi gibi görünmelidir.\n•   Numara kullanma, başlık atma veya markdown biçimlendirmesi yapma.\n•   Yoğun çalışan profesyonellere uygun, sade ve doğal bir dil kullan.\n•   Yalnızca nihai LinkedIn gönderi metnini ve hashtag’leri çıktı olarak ver.\n•   Araçlardan, promptlardan, adımlardan veya yapay zekâ olduğundan asla bahsetme."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -176,
+        -32
+      ],
+      "id": "699de6b6-81b4-4ca8-8914-c04f455c65d8",
+      "name": "LinkedIn Post Oluşturma_Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/google/nano-banana-2/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "YOUR_REPLICATE_API_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "input.prompt",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        960,
+        -32
+      ],
+      "id": "985de693-e68c-404d-8a3e-5e026ebe147f",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=Rol ve Amaç\nLinkedIn gönderi içeriklerini, yazılı mesajı güçlendiren ve modern marka standartlarıyla uyumlu, profesyonel pazarlama görselleri üretmeye uygun yüksek kaliteli görsel prompt açıklamalarına dönüştüren bir Yapay Zekâ Ajanısın.\n\nYetkinlikler\n•\tLinkedIn gönderisini analiz ederek tek ve net ana mesajı veya içgörüyü belirlemek.\n•\tSoyut veya karmaşık fikirleri güçlü görsel metaforlar ya da tasarım konseptlerine dönüştürmek.\n•\tMetinden görsele üretim araçları için uygun, kısa ve etkileyici prompt’lar oluşturmak.\n•\tGörsellerin profesyonel, modern ve LinkedIn pazarlama içeriğine uygun olmasını sağlamak.\n•\tGörsel anlatımı güçlendirdiği durumlarda gönderideki sayısal verileri veya istatistikleri görsele entegre etmek.\n\nEtkileşim Stili\n•\tBir marka tasarımcısı veya kreatif direktör gibi düşünmek.\n•\tGörsel odaklı, betimleyici ve bilinçli bir dil kullanmak.\n•\tHer çıktı için tek, kompakt bir paragraf üretmek.\n•\tAçıklama, yorum veya alternatif sunmamak.\n\nNotlar\n•   Her zaman türkçe konuşmalısın\n•\tYalnızca nihai görsel prompt metnini çıktı olarak ver.\n•\tTırnak işareti, yer tutucu ifadeler veya “buraya başlık” gibi etiketler asla kullanma.\n•\tLinkedIn gönderisini metin olarak tekrar etme veya özetleme.\n•\tGerçekçi veya birebir sahnelerden kaçın; düz, minimalist, soyut veya metafor temelli görselleri tercih et.\n•\tAksi açıkça belirtilmedikçe, temiz, profesyonel ve LinkedIn’e hazır bir görsel estetik varsay."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "d84ec94d-856d-4f5c-933f-d8c627163513",
+      "name": "Gönderi Promp_Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "Görevin, verilen prompta dayanarak LinkedIn gönderisi için net, dikkat çekici ve yüksek etkileşim potansiyeline sahip tek bir başlık oluşturmaktır."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        592,
+        -32
+      ],
+      "id": "a3097241-f05a-4677-acc8-e10a3c2a4fd9",
+      "name": "Baslik Ai_Agent"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.urls.get }} }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "YOUR_REPLICATE_API_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1184,
+        -32
+      ],
+      "id": "6d88b32d-e988-46a8-9af2-c193e28b32ce",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "460b31c0-90f9-46dc-b797-ff15cce13ce1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "=succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        -32
+      ],
+      "id": "ca184d46-6d6c-4375-9008-d96e15a6723b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1632,
+        -128
+      ],
+      "id": "4da21dd3-ba63-4c97-a711-913ce14f854e",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        80
+      ],
+      "id": "241d4986-38d2-4364-8028-108f4dc406da",
+      "name": "Wait",
+      "webhookId": "a2a92500-2c22-41ba-be71-9adee977e12a"
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "14SwuN9i1S5J26Wjw3zQARDuFQVSNE1lP",
+          "mode": "list",
+          "cachedResultName": "linkedln-post",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/14SwuN9i1S5J26Wjw3zQARDuFQVSNE1lP"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1872,
+        -128
+      ],
+      "id": "220531d6-be87-4e1b-bb4b-2f5440eaba0d",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "R2MlipGkLIiZcleO",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Post Oluşturma_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LinkedIn Post Oluşturma_Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Gönderi Promp_Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Baslik Ai_Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "LinkedIn Post Oluşturma_Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Post Oluşturma_Agent": {
+      "main": [
+        [
+          {
+            "node": "Gönderi Promp_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gönderi Promp_Agent": {
+      "main": [
+        [
+          {
+            "node": "Baslik Ai_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baslik Ai_Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "296ac0b0-800d-48d8-9936-b7f70bdfb346",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b2e10dcd32fa0c1ef13e77cac7135c4eebea0e0777f0e9256b35e1cbf130900"
+  },
+  "nodeGroups": [],
+  "id": "X1uM5RTk7LZjZnLe",
+  "tags": []
+}

@@ -1,0 +1,563 @@
+{
+  "name": "Müşteri Geri Bildirim Otomasyon Sistemi",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Müşteri Geri Bildirimi",
+        "formDescription": "Sizin deneyiminizi önemsiyoruz! Lütfen hizmetimiz hakkında\ndüşüncelerinizi ve iyileştirmeler için önerilerinizi paylaşın",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ad",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "E-posta",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Geri Bildirim",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1664,
+        -288
+      ],
+      "id": "64df4e2c-e5ec-4345-9010-b7a8f645dc3c",
+      "name": "On form submission",
+      "webhookId": "098497ac-edf2-47b3-a3ee-da7e7ed772c0"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json['Geri Bildirim'] }}",
+        "options": {
+          "systemPromptTemplate": "Bu metni 'Olumlu' veya 'Olumsuz' olarak sınıflandır. Sadece bir kelime döndür."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        -1472,
+        -304
+      ],
+      "id": "26cd3012-9fbd-478a-b737-58518bc5991f",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -1488,
+        -96
+      ],
+      "id": "670e9984-44b4-4e40-b178-41b8e465d117",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -944,
+        -304
+      ],
+      "id": "eb67514c-ae1c-4ec8-a0ac-233cde474183",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Müşteri Adı:{{ $json.Ad }}\n\nGeri Bildirim:{{ $json['Geri Bildirim'] }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Sen MiuulAI'nın müşteri destek temsilcisisin.\nBu müşteri geri bildirimine dostça bir yanıt yaz.\n\nYanıt Sadece HTML formatında olmalı."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -944,
+        -464
+      ],
+      "id": "14e82d6e-e8d8-4183-933e-9cf16411c1da",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Müşteri Adı:{{ $json.Ad }}\n\nGeri Bildirim:{{ $json['Geri Bildirim'] }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Sen MiuulAI'nın müşteri destek temsilcisisin.\nBu müşteri geri bildirimine profesyonel bir özür ve çözüm önerisi yaz.\n\nE-postada şu noktaları belirt:\n1. Geri bildirim için teşekkür.\n2. Endişelerinizi anlıyoruz.\n3. Sorunu yöneticiye ilettik.\n4. Mevcut paketlerine ek bir AI Agent entegrasyonu teklif et (Ücretsiz).\n\nYanıt sadece HTML formatında olmalı.\n\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1056,
+        -80
+      ],
+      "id": "fac76b0b-6283-47a1-aa9b-85961ef1c54c",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -960,
+        80
+      ],
+      "id": "8b91b48f-0572-405a-853d-b2759bb04101",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['E-posta'] }}",
+        "subject": "Geri Bildiriminiz İçin Teşekkür Ederiz.",
+        "message": "={{ $('Basic LLM Chain').item.json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        -464
+      ],
+      "id": "21319430-5b85-4958-8c75-e5605e5714a9",
+      "name": "Send a message",
+      "webhookId": "1d2e7fbe-08d5-499c-a228-23c51d09685c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ou7uvkFgbDLH99pj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['E-posta'] }}",
+        "subject": "Endişeleriniz İçin Özür Dileriz.-Çözüm önerimiz",
+        "message": "={{ $('Code in JavaScript').item.json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        -80
+      ],
+      "id": "77113233-83e2-4369-895c-de3c1d04b1b9",
+      "name": "Send a message1",
+      "webhookId": "1d2e7fbe-08d5-499c-a228-23c51d09685c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ou7uvkFgbDLH99pj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yKFR2nPq66x23oz2Ghn1aoGXZ6Q5IphypjZJwBiPM9Y",
+          "mode": "list",
+          "cachedResultName": "Müşteri Destek Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yKFR2nPq66x23oz2Ghn1aoGXZ6Q5IphypjZJwBiPM9Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Positive Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yKFR2nPq66x23oz2Ghn1aoGXZ6Q5IphypjZJwBiPM9Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $('On form submission').item.json.submittedAt }}",
+            "Customer Name": "={{ $('On form submission').item.json.Ad }}",
+            "Email": "={{ $('On form submission').item.json['E-posta'] }}",
+            "Feedback": "={{ $('On form submission').item.json['Geri Bildirim'] }}",
+            "Status": "\"Responded\""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -560,
+        -464
+      ],
+      "id": "335d32f8-075d-46aa-bee1-0e0b3c32728a",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "m7VPUAYFmoqJjDWb",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = $input.first();\nconst rawHtml = inputItem.json.text || '';\n\n// Markdown kod bloklarını temizle\nlet cleanText = rawHtml\n  .replace(/```html/gi, '')\n  .replace(/```/g, '');\n\n// Style bloklarını ve HTML etiketlerini tamamen kaldır\ncleanText = cleanText\n  .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n  .replace(/<[^>]+>/g, '')\n  .replace(/&nbsp;/g, ' ')\n  .replace(/\\n\\s*\\n+/g, '\\n\\n')\n  .trim();\n\nreturn [\n  {\n    json: {\n      ...inputItem.json,\n      clean_suggestion: cleanText\n    },\n    pairedItem: {\n      item: 0\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -80
+      ],
+      "id": "b217a6c3-4d0e-442a-815b-55f251ac46c2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yKFR2nPq66x23oz2Ghn1aoGXZ6Q5IphypjZJwBiPM9Y",
+          "mode": "list",
+          "cachedResultName": "Müşteri Destek Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yKFR2nPq66x23oz2Ghn1aoGXZ6Q5IphypjZJwBiPM9Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1628257967,
+          "mode": "list",
+          "cachedResultName": "Negative Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yKFR2nPq66x23oz2Ghn1aoGXZ6Q5IphypjZJwBiPM9Y/edit#gid=1628257967"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $('On form submission').item.json.submittedAt }}",
+            "Customer Name": "={{ $('On form submission').item.json.Ad }}",
+            "Email": "={{ $('On form submission').item.json['E-posta'] }}",
+            "Feedback": "={{ $('On form submission').item.json['Geri Bildirim'] }}",
+            "Suggestion": "={{ $json.clean_suggestion }}",
+            "Status": "\"Escalated\""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggestion",
+              "displayName": "Suggestion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -512,
+        -80
+      ],
+      "id": "81d5b2ae-a952-4337-b3dd-912ad196e0a4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "m7VPUAYFmoqJjDWb",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 1️⃣ Müşteri Geri Bildirimi\n\n**Form gönderimi tetikleyicisi.**  \nMüşterinin **adı, e-posta adresi ve geri bildirimi** bu adımdan alınır.\n\n# 2️⃣ Duygu Analizi\n\n**AI modeli müşteri geri bildirimini analiz eder.**  \nGeri bildirimi **\"Olumlu\"** veya **\"Olumsuz\"** olarak sınıflandırır. Bu sonuç workflow'un hangi yola gideceğini belirler.\n\n# 3️⃣ Olumlu Yanıt Yaz\n\n**Olumlu geri bildirim yolu.**  \nDuygu Analizi sonucu **\"Olumlu\"** ise bu adım çalışır. AI, müşteriye **dostça ve profesyonel** bir yanıt oluşturur.\n\n# 4️⃣ Olumlu Geri Bildirim Ekle\n\n**Olumlu geri bildirim kaydı.**  \nMüşteri bilgileri ve oluşturulan yanıt **Google Sheets'e kaydedilir.** Raporlama ve analiz için veri tabanında tutulur.\n\n# 5️⃣ Olumlu Geri Bildirim Yanıtı Gönder\n\n**Oluşturulan yanıt müşteriye gönderilir.**  \nAI tarafından hazırlanan olumlu yanıt, müşterinin **e-posta adresine Gmail aracılığıyla** gönderilir.\n\n**Konu:** Değerli Geri Bildiriminiz İçin Teşekkür Ederiz\n\n# 6️⃣ İyileştirme Önerileri Sunar\n\n**Olumsuz geri bildirim yolu.**  \nDuygu Analizi sonucu **\"Olumsuz\"** ise bu adım çalışır. AI, müşterinin yaşadığı soruna yönelik **iyileştirme önerisi** oluşturur.\n\n# 7️⃣ Özür E-postası Yaz\n\n**Olumsuz geri bildirim için yanıt oluşturulur.**  \nAI, müşteriye **özür, empati ve çözüm önerisi** içeren profesyonel bir e-posta hazırlar.\n\n# 8️⃣ Olumsuz Geri Bildirim Ekle\n\n**Olumsuz geri bildirim kaydı.**  \nMüşteri bilgileri, geri bildirim ve oluşturulan yanıt **Google Sheets'e kaydedilir.** Sorun takibi ve **iyileştirme planlaması** için kayıt tutulur.\n\n# 9️⃣ Mesaj Gönder\n\n**Hazırlanan özür e-postası müşteriye gönderilir.**  \nYanıt, müşterinin **e-posta adresine Gmail aracılığıyla** gönderilir.\n\n**Konu:** Endişeleriniz İçin Özür Dileriz - Çözüm Önerimiz",
+        "height": 1136,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2144,
+        -736
+      ],
+      "id": "286509d8-a31d-427c-bcc4-664a34a15c0c",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8295b636-ba27-487c-9a04-139f11f814ad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b2e10dcd32fa0c1ef13e77cac7135c4eebea0e0777f0e9256b35e1cbf130900"
+  },
+  "nodeGroups": [],
+  "id": "vuJusKaDpUljxUja",
+  "tags": []
+}

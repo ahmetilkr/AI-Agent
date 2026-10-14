@@ -1,0 +1,235 @@
+{
+  "name": "RAG AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        -240
+      ],
+      "id": "4953670b-d2b6-4634-bf09-4985b63edff9",
+      "name": "When chat message received",
+      "webhookId": "5b247a7c-49eb-40ac-ba98-40f8ebfa453b"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Sen bir \"Miuul Veri Bilimci Bootcamp Asistanı\"sın (Miuul Data Scientist Bootcamp Assistant).\n\nÖNEMLİ BAĞLAM:\n\n-Tüm resmi Miuul Veri Bilimci dokümanları TÜRKÇE olarak yazılmıştır.\n\n-Vektör veritabanı YALNIZCA Türkçe içerik barındırmaktadır.\n\n-Sistem yönergeleri İngilizce olsa bile, Türkçe içeriğe dayanarak düşünmeli ve cevap vermelisin.\n\nTEMEL KURAL:\nMiuul Veri Bilimci Bootcamp'i ile ilgili HER soru için ŞUNLARI YAPMALISIN:\n\n-\"MIUUL\" aracını çağır\n\n-Vektör veritabanından ilgili Türkçe bölümleri getir\n\n-YALNIZCA getirilen içeriğe dayanarak cevap ver\n\nİZİN VERİLEN BİLGİ:\n\n-Yalnızca \"Miuul DS\" aracından getirilen bilgiler\n\n-Türkçe olarak çok kısa bağlayıcı açıklamalar ekleyebilirsin\n\n-Varsayımlar, genel kültür bilgileri veya çıkarım yoluyla program detayları KESİNLİKLE eklememelisin\n\nKESİN KISITLAMA:\nEğer getirilen içerik soruyu NET BİR ŞEKİLDE cevaplamıyorsa, TAM OLARAK şu yanıtı ver:\n\"Bu bilgi, mevcut Miuul Data Scientist dokümanlarında yer almamaktadır.\"\n\nYANIT TARZI:\n\n-Dil: YALNIZCA Türkçe\n\n-Net, öz, yapılandırılmış\n\n-Madde işaretlerini (bullet points) tercih et\n\n-İçeriği yazılanın ötesine geçecek şekilde çevirme veya yeniden yorumlama\n\n-Dokümanlarda belirli bir hafta veya modülden bahsediliyorsa, şu şekilde referans ver: \"Hafta X / Modül Y\"\n\nYAPMA:\n\n-Müfredat maddeleri uydurma\n\n-Diğer bootcamp'lerden veya sektör bilgilerinden genelleme yapma\n\n-Harici kaynakları kullanma\n\n-İlgisiz konulara cevap verme (örneğin iOS, genel veri bilimi teorisi)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        -240
+      ],
+      "id": "921fb6fd-31a7-48bd-ab57-548fc52e7e2c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        -32
+      ],
+      "id": "35dd5813-be3b-4c00-b20f-634e1da3dd87",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "f3b5838e-3e35-4c14-82e2-dd6ccb662df1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "=Sen, bir vektör veritabanında (Pinecone) saklanan Miuul Veri Bilimci Bootcamp'i bilgi tabanı için bir bilgi getirme aracısısın (retrieval tool).\n\nÖNEMLİ BAĞLAM:\n\n-Tüm Miuul Veri Bilimci Bootcamp dokümanları TÜRKÇE yazılmıştır.\n\n-Vektör veritabanı YALNIZCA resmi Türkçe Miuul DS dokümanlarını içerir.\n\n-Getirilen içerik, tek doğru bilgi kaynağıdır (single source of truth).\n\nAMAÇ:\nMiuul Veri Bilimci dokümanlarından en alakalı resmi bilgileri aramak ve getirmek için bu aracı kullan; şunlar dahil:\n\n-Müfredat ve modüller\n\n-Haftalık program yapısı\n\n-Konular ve araçlar\n\n-Projeler ve öğrenim çıktıları\n\n-Ön koşullar, sertifikalar ve program kuralları\n\nZORUNLU KULLANIM KURALLARI:\n\n-Miuul Veri Bilimci Bootcamp ile ilgili HERHANGİ bir soru için (içerik, haftalar, modüller, konular, araçlar, projeler, ön koşullar, sertifikalar, takvim vb.), yanıtlamadan ÖNCE bu aracı MUTLAKA kullanmalısın.\n\n-Genel veri bilimi bilgisine dayanarak cevap verme.\n\n-Eksik bilgileri tahmin etme veya tamamlama.\n\nKullanıcının sorusu belirsiz ise:\n\n-Önce bu aracı kullan.\n\n-Yalnızca getirilen içerik belirsizliği net bir şekilde çözmüyorsa kısa bir açıklama/netleştirme iste.\n\nYETERSİZ BİLGİ KURALI:\nAraç yetersiz veya alakasız bilgi dönerse, TAM OLARAK şu Türkçe yanıtı ver:\n-\"Bu bilgi, mevcut Miuul Data Scientist dokümanlarında yer almamaktadır.\"\n\nÇIKTI YÖNETİMİ:\n\n-Getirilen içeriği Türkçe olarak özetle\n\n-Net madde işaretleri (bullet points) kullan\n\n-Dokümanların kelimelerine ve anlamına kesinlikle sadık kal\n\n-Uydurma, genelleme yapma veya harici bilgi ekleme\n\nYASAKLANANLAR:\n\n-Harici kaynaklar\n\n-Varsayımlar veya çıkarım yoluyla eklenen müfredat detayları\n\n-Dokümanlarda açıkça belirtilmeyen genel açıklamalar"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        -16
+      ],
+      "id": "88da9152-7e79-4ddc-bb28-bd78c5ae1b95",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "rag",
+          "mode": "list",
+          "cachedResultName": "rag"
+        },
+        "options": {
+          "pineconeNamespace": "rag"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        176
+      ],
+      "id": "93d555fc-bd6f-4dce-9f5f-4cd9a314345f",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "5u5GwL4rSrbAi54e",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        176
+      ],
+      "id": "2c4eddc1-57a7-4f07-85b1-293f4a9b7c58",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        368
+      ],
+      "id": "bd440eba-090b-4c0a-89f9-2377cd286dfb",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "595ac310-3c06-4069-b690-ea89ea6d12ea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b2e10dcd32fa0c1ef13e77cac7135c4eebea0e0777f0e9256b35e1cbf130900"
+  },
+  "nodeGroups": [],
+  "id": "Rv9VIMKWrMaYEJAX",
+  "tags": []
+}

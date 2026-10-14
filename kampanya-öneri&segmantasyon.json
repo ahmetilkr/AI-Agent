@@ -1,0 +1,580 @@
+{
+  "name": "miuul_final_project",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -832,
+        -208
+      ],
+      "id": "7022f679-a867-4108-bb12-834af3f9bec5",
+      "name": "When chat message received",
+      "webhookId": "9bab01fd-d94f-4323-9ff3-b9b220897bdc"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Müşteri analiz sonuçlarını ve kampanya önerilerini yalnızca araçlardan dönen verilere dayanarak değerlendir.\n\nKampanya seçimi için aşağıdaki sırayı izle:\n\n1. Önce analyze_customer_tool aracını kullanarak müşteriyi analiz et.\n\n2. Analiz sonucundaki churn_prediction değerine göre campaign_tool aracını kullan:\n   - churn_prediction = 1 → retention kampanyaları\n   - churn_prediction = 0 → growth kampanyaları\n\n3. Kampanyaları değerlendirirken müşterinin:\n   - cluster / cluster_name bilgisini,\n   - kampanyanın target_clusters alanını,\n   - müşteri özelliklerini,\n   - kampanyanın relevant_features alanlarını\n   birlikte değerlendir.\n\n4. Kampanyanın target_clusters alanını mutlaka kontrol et. Müşterinin cluster değeri kampanyanın target_clusters listesinde yer alıyorsa, bu kampanya müşteri segmenti açısından uyumlu kabul edilir ve kampanya seçiminde öncelikli olarak değerlendirilmelidir.\n\n5. target_clusters tek başına yeterli değildir. Segment uyumunun yanında müşterinin gerçek özellikleri ile kampanyanın relevant_features alanları arasındaki eşleşmeyi de değerlendir.\n\n6. Cluster uyumu ve relevant_features eşleşmesini birlikte değerlendirerek en uygun TEK kampanyayı seç.\n\n7. Birden fazla kampanya uygun görünse bile yalnızca en güçlü eşleşmeye sahip TEK kampanyayı seç. Alternatif kampanya veya ikinci seçenek sunma.\n\nKampanya seçiminin gerekçesini:\n- müşterinin gerçek özellikleri,\n- relevant_features ile olan eşleşme,\n- müşterinin cluster değeri ile kampanyanın target_clusters alanı arasındaki uyum\nüzerinden açıkla.\n\nÖzelliklerden doğrudan desteklenmeyen neden-sonuç ilişkileri kurma.\n\nBir özelliğin yüksek veya düşük olması, tek başına müşterinin kesin olarak bir sorun yaşadığını veya belirli bir davranış göstereceğini kanıtlamaz.\n\n\"Kanıtlamaktadır\", \"kesin olarak göstermektedir\", \"müşteri kesinlikle sorun yaşamıştır\" gibi ifadeler kullanma.\n\nBunun yerine:\n- \"uygun görünmektedir\"\n- \"işaret edebilir\"\n- \"ilişkili olabilir\"\n- \"bu özellik nedeniyle bu kampanya daha uygun görünmektedir\"\n\ngibi temkinli ifadeler kullan.\n\nChurn probability değerini belirli bir müşteri özelliğinin neden olduğu şeklinde yorumlama. Churn tahminini modelin analiz sonucu olarak değerlendir.\n\nAraçlardan döndürülmeyen müşteri bilgilerini, özellikleri, kampanyaları veya kampanya detaylarını uydurma.\n\nÇIKTI FORMATI:\n\nYanıtını yalnızca geçerli JSON formatında oluştur.\n\nMarkdown kullanma.\nKod bloğu kullanma.\nJSON dışında hiçbir açıklama yazma.\n\nJSON aşağıdaki alanları içermelidir:\n\n{ \n  \"CustomerID\": \"Müşteri ID\",\n  \"Churn Prediction\": 0,\n  \"Churn Probability\": 0.0,\n  \"Cluster\": 0,\n  \"Segment\": \"Cluster adı\",\n  \"Campaign ID\": \"Kampanya ID\",\n  \"Campaign Name\": \"Kampanya adı\",\n  \"Offer Type\": \"Teklif türü\",\n  \"Offer Amount\": \"Teklif tutarı\",\n  \"Min Order Amount\": \"Minimum sipariş tutarı\",\n  \"Validity\": \"Geçerlilik süresi\",\n  \"Usage Limit\": \"Kullanım sınırı\",\n  \"Recommendation Reason\": \"Kampanyanın neden seçildiğini açıklayan gerekçe\"\n}\n\nKurallar:\n\n- Alan adlarını değiştirme.\n- Yalnızca araçlardan elde edilen bilgileri kullan.\n- Araçlarda bulunmayan bir bilgi varsa ilgili alana \"Belirtilmemiş\" yaz.\n- CustomerID değerini değiştirme veya tahmin etme.\n- Churn Prediction ve Cluster değerlerini sayısal olarak döndür.\n- Churn Probability değerini 0 ile 1 arasında sayısal olarak döndür.\n- Yalnızca TEK kampanya döndür.\n- Alternatif kampanya veya ikinci seçenek ekleme.\n- Recommendation Reason içinde müşterinin gerçek özellikleri, relevant_features eşleşmesi ve target_clusters uyumunu açıkla.\n- Recommendation Reason içinde kesin neden-sonuç ilişkileri kurma.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -608,
+        -208
+      ],
+      "id": "19f4622d-cf16-4b2b-a556-f7de7ecd938e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -688,
+        -32
+      ],
+      "id": "99bd0bd4-75c8-4598-9489-24af16f2c20d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Müşterinin churn durumuna göre uygun kampanya grubunu almak için bu aracı kullan.\n\nBu araç, `churn_prediction` değerini girdi olarak alır ve buna göre ilgili kampanya listesini döndürür.\n\n`churn_prediction` değeri Analyze Customer Tool'un sonucundan alınmalıdır. Bu değeri kendin tahmin etme, değiştirme veya uydurma.\n\nGirdi:\n\n* `churn_prediction`: Analyze Customer Tool tarafından döndürülen churn tahmini.\n  * `1` → retention / churn önleme kampanyaları döndürülür.\n  * `0` → growth / müşteri etkileşimini veya harcamasını artırmaya yönelik kampanyalar döndürülür.\n\nKullanım sırası:\n\n1. Önce Analyze Customer Tool ile müşteriyi analiz et.\n2. Analyze Customer sonucundaki `churn_prediction`, `cluster` ve `cluster_name` değerlerini al.\n3. Analyze Customer sonucundaki `churn_prediction` değerini `churn_prediction` parametresi olarak bu araca gönder.\n4. Araç tarafından döndürülen kampanyaların `target_clusters` ve `relevant_features` alanlarını incele.\n5. Müşterinin `cluster` değerini kampanyaların `target_clusters` alanlarıyla karşılaştır.\n6. Müşterinin `customer_features` bilgileri ile kampanyaların `relevant_features` alanları arasındaki eşleşmeyi değerlendir.\n7. `target_clusters` uyumu ve `relevant_features` eşleşmesini birlikte değerlendirerek müşteriye en uygun TEK kampanyayı seç.\n8. Kampanyayı yalnızca bu araç tarafından döndürülen kampanyalar arasından seç.\n\n`target_clusters` alanı kampanyanın hangi müşteri segmentleriyle uyumlu olduğunu gösterir. Müşterinin `cluster` değeri kampanyanın `target_clusters` listesinde yer alıyorsa kampanya segment açısından uyumludur ve seçimde öncelikli olarak değerlendirilmelidir.\n\n`target_clusters` tek başına kampanya seçimi için yeterli değildir. Müşterinin gerçek özellikleri ile kampanyanın `relevant_features` alanları arasındaki eşleşme de dikkate alınmalıdır.\n\nAraç tarafından döndürülmeyen kampanyaları veya kampanya özelliklerini uydurma.\n\nBu araç kampanya listesini sağlar. AI Agent, Analyze Customer Tool'dan alınan müşteri bilgileri ile bu araçtan dönen `target_clusters`, `relevant_features` ve diğer kampanya bilgilerini birlikte değerlendirerek en uygun TEK kampanyayı belirler ve önerinin nedenini açıklar.",
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/get-campaigns",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "churn_prediction",
+              "value": "={{ $fromAI('churn_prediction') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        -368,
+        80
+      ],
+      "id": "c068bce0-8473-4f46-b5b2-a7e83beb864e",
+      "name": "campaign_tool"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Mevcut bir müşteriyi CustomerID kullanarak analiz etmek için bu aracı kullan.\n\nBu araç yalnızca sistemde kayıtlı mevcut müşteriler için kullanılabilir. Kullanıcı bir CustomerID verdiğinde, CustomerID değerini değiştirmeden veya tahmin etmeden bu aracı çağır.\n\nAracı kullanırken:\n\n* `customer_id` alanına kullanıcının verdiği CustomerID değerini gönder.\n* CustomerID bilinmiyorsa veya kullanıcı bir müşteri belirtmediyse CustomerID uydurma; kullanıcıdan CustomerID iste.\n* Müşterinin sistemde bulunup bulunmadığını kontrol etmek için bu aracı kullan.\n\nAraç, müşteriyi makine öğrenmesi modelleriyle analiz eder ve aşağıdaki bilgileri döndürür:\n\n* `customer_id`: Analiz edilen müşterinin kimliği.\n* `churn_prediction`: XGBoost modelinin müşterinin churn edip etmeyeceğine ilişkin tahmini.\n  * `1` → müşteri churn riski taşıyor.\n  * `0` → müşteri churn riski taşımıyor.\n* `churn_probability`: XGBoost modelinin müşterinin churn etme olasılığına ilişkin tahmini. Değer 0 ile 1 arasındadır.\n* `cluster`: KMeans modeli tarafından belirlenen müşteri segmenti.\n* `cluster_name`: KMeans cluster değerinin karşılık geldiği müşteri segmentinin adı.\n* `customer_features`: Müşterinin davranışsal ve temel özellikleri. Bu özellikler müşterinin profilini anlamak ve daha sonra uygun kampanyayı değerlendirmek için kullanılabilir.\n\nBu aracın döndürdüğü bilgileri sonraki değerlendirmelerde temel al. Araç tarafından döndürülmeyen müşteri bilgilerini tahmin etme veya uydurma.\n\nÖzellikle `churn_prediction` değerini müşterinin kampanya stratejisini belirlemede kullan:\n\n* `churn_prediction = 1` → retention / churn önleme kampanyaları değerlendirilmelidir.\n* `churn_prediction = 0` → growth / müşterinin harcamasını veya etkileşimini artırmaya yönelik kampanyalar değerlendirilmelidir.\n\n`cluster` ve `cluster_name` değerlerini kampanya seçiminde kullanılmak üzere Campaign Tool ile birlikte değerlendir.\n\nBu araç yalnızca müşteri analizini gerçekleştirir. Kampanya listesini almak için ayrıca Campaign Tool kullanılacaktır.",
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/analyze",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "customer_id",
+              "value": "={{ $fromAI('customer_id') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "cce407a1-fa76-4082-bab5-d0b9f8cde757",
+      "name": "analyze_customer_tool"
+    },
+    {
+      "parameters": {
+        "sendTo": "ahmetilker3535@gmail.com",
+        "subject": "Kampanya Önerisi - Müşteri Analiz Raporu",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        -208
+      ],
+      "id": "1bd061e2-08ef-4705-87fb-935c78c806b3",
+      "name": "Send a message",
+      "webhookId": "544a0132-75eb-4f0f-bda0-884b1d4c84c4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ou7uvkFgbDLH99pj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=AI Agent tarafından oluşturulan aşağıdaki kampanya önerisini kampanya ekibine gönderilecek sade, profesyonel ve görsel olarak düzenli bir HTML e-posta gövdesine dönüştür.\n\nYalnızca AI Agent çıktısındaki bilgileri kullan. Bilgi uydurma, değiştirme veya ekleme.\n\nAI Agent'ın seçtiği kampanyayı değiştirme ve yalnızca bu tek kampanyayı göster. Alternatif kampanya veya ikinci seçenek sunma.\n\nHTML e-posta şu bölümleri içersin:\n- Başlık\n- Önerinin oluşturulduğu tarih ve saat\n- Müşteri bilgileri: CustomerID, Churn Prediction, Churn Probability ve Segment\n- Önerilen kampanya: Campaign ID ve Campaign Name\n- Teklif detayları: Offer Type, Offer Amount, Min Order Amount, Validity ve Usage Limit\n- Kampanyanın seçilme gerekçesi\n\nTasarım:\n- Sade ve profesyonel bir görünüm kullan.\n- Bilgileri okunabilir kartlar ve tablolar halinde düzenle.\n- Inline CSS kullan.\n- Gmail ile uyumlu HTML oluştur.\n- Gereksiz uzunlukta veya karmaşık tasarım kullanma.\n\nKurallar:\n- Sadece HTML döndür.\n- Markdown kullanma.\n- ```html gibi kod bloğu işaretleri kullanma.\n- AI Agent çıktısında bulunmayan bir bilgi varsa \"Belirtilmemiş\" yaz.\n- AI Agent'ın gerekçesini anlamını değiştirmeden, daha düzenli bir e-posta formatına dönüştür.\n- AI Agent'ın oluşturduğu Timestamp değerini değiştirme.\n- E-posta gövdesine AI Agent, LLM, n8n, otomatik oluşturuldu, otomatik gönderildi, sistem tarafından oluşturuldu veya benzeri teknik/sistemsel ifadeler ekleme. Footer, imza, açıklama veya kaynak bilgisi ekleme. Yalnızca yukarıda belirtilen bölümleri oluştur.\n\nAI Agent çıktısı:\n\n{{ $json.output }}",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -240,
+        -208
+      ],
+      "id": "03d93e92-9400-4b53-a766-93d5847a732e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -272,
+        -48
+      ],
+      "id": "8b1f9cff-1802-4b5c-b42c-5e117e85c5a8",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qlcx6Ms8uGL6kS9F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1lLfvPQG-CDvJfGUfJUJE1DcWqN8lw4lbGpZ-z7uRcTc",
+          "mode": "list",
+          "cachedResultName": "müşteri_kampanya_öneri",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lLfvPQG-CDvJfGUfJUJE1DcWqN8lw4lbGpZ-z7uRcTc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sayfa1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lLfvPQG-CDvJfGUfJUJE1DcWqN8lw4lbGpZ-z7uRcTc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.Timestamp }}",
+            "CustomerID": "={{ $json.CustomerID }}",
+            "Churn Prediction": "={{ $json['Churn Prediction'] }}",
+            "Churn Probability": "={{ $json['Churn Probability'] }}",
+            "Cluster": "={{ $json.Cluster }}",
+            "Segment": "={{ $json.Segment }}",
+            "Campaign ID": "={{ $json['Campaign ID'] }}",
+            "Campaign Name": "={{ $json['Campaign Name'] }}",
+            "Offer Type": "={{ $json['Offer Type'] }}",
+            "Offer Amount": "={{ $json['Offer Amount'] }}",
+            "Min Order Amount": "={{ $json['Min Order Amount'] }}",
+            "Validity": "={{ $json.Validity }}",
+            "Usage Limit": "={{ $json['Usage Limit'] }}",
+            "Recommendation Reason": "={{ $json['Recommendation Reason'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CustomerID",
+              "displayName": "CustomerID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Churn Prediction",
+              "displayName": "Churn Prediction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Churn Probability",
+              "displayName": "Churn Probability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cluster",
+              "displayName": "Cluster",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Segment",
+              "displayName": "Segment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Campaign ID",
+              "displayName": "Campaign ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Campaign Name",
+              "displayName": "Campaign Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Offer Type",
+              "displayName": "Offer Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Offer Amount",
+              "displayName": "Offer Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Min Order Amount",
+              "displayName": "Min Order Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Validity",
+              "displayName": "Validity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Usage Limit",
+              "displayName": "Usage Limit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recommendation Reason",
+              "displayName": "Recommendation Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        304,
+        -32
+      ],
+      "id": "c08c4622-20f0-4449-ae23-23cbd745f6f8",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "m7VPUAYFmoqJjDWb",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d289a922-e6d9-40b8-a150-2eeeb32d8fb9",
+              "name": "Timestamp",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "5132a938-8039-4954-b830-5bea8038485a",
+              "name": "CustomerID",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output).CustomerID }}",
+              "type": "string"
+            },
+            {
+              "id": "cf9f5c41-951d-4765-951b-9ac0ebe5c28d",
+              "name": "Churn Prediction",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Churn Prediction\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "3c6fcfbc-c036-4ce3-a88b-9666dccf7a39",
+              "name": "Churn Probability",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Churn Probability\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "1eef6773-981a-4509-a673-b8597c72403d",
+              "name": "Cluster",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output).Cluster }}",
+              "type": "string"
+            },
+            {
+              "id": "40635c72-6978-4276-8bc3-1aea6b0bd05f",
+              "name": "Segment",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output).Segment }}",
+              "type": "string"
+            },
+            {
+              "id": "93f7ac71-aaef-4090-9ef4-36868bc8b808",
+              "name": "Campaign ID",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Campaign ID\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5563cafd-7f40-4748-b14b-5b3a9d42fc37",
+              "name": "Campaign Name",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Campaign Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c8ccd47f-8095-4576-96c8-9b983774a130",
+              "name": "Offer Type",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Offer Type\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "3d206576-4917-4f87-9936-a84dc4b6fec5",
+              "name": "Offer Amount",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Offer Amount\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "8b6e03ac-4a60-4be8-a7bb-5aa39a3a37bf",
+              "name": "Min Order Amount",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Min Order Amount\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f90256ff-8df6-4c36-ac15-39b44c0fc270",
+              "name": "Validity",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output).Validity }}",
+              "type": "string"
+            },
+            {
+              "id": "a5997e65-8620-4ed1-b30f-e3088a1550d9",
+              "name": "Usage Limit",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Usage Limit\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "d7a2d4c6-e193-4d12-bb40-530572b5986a",
+              "name": "Recommendation Reason",
+              "value": "={{ JSON.parse($('AI Agent').item.json.output)[\"Recommendation Reason\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "970b3959-5c7e-451a-9826-47ccb6295dfb",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "campaign_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "analyze_customer_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7a0a0ea7-fb18-41b1-ae34-0338a4469883",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b2e10dcd32fa0c1ef13e77cac7135c4eebea0e0777f0e9256b35e1cbf130900"
+  },
+  "nodeGroups": [],
+  "id": "iKjTp3GzM35bkaKG",
+  "tags": []
+}
